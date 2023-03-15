@@ -41,14 +41,14 @@
       "activitybar": [
         {
           "id": "simcode",
-          "title": "Emulator Manager",
-          "icon": "media/icon.svg"
+          "title": "Simcode",
+          "icon": "media/logo.svg"
         }
       ]
     },
     "configuration": {
       "type": "object",
-      "title": "Emulator Manager",
+      "title": "Simcode",
       "properties": {
         "simcode.androidhome": {
           "type": "string",
@@ -60,8 +60,8 @@
     "commands": [
       {
         "command": "simcode.openSettings",
-        "title": "Open emulator manager setting",
-        "category": "Emulator Manager"
+        "title": "Open Simcode setting",
+        "category": "Simcode"
       },
       {
         "command": "simcode.android.refreshDevice",
