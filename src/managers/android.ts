@@ -1,69 +1,88 @@
 import * as vscode from 'vscode';
 import { DevicePlatform } from '../constants';
-import { Device } from '../models/device';
+import { Device, DeviceState } from '../models/device';
 import { DeviceTreeProvider } from '../views/device-tree-provider';
 import { DeviceManager } from './device-manager';
+import { spawnSync, execFileSync } from 'child_process';
+import { existsSync } from 'fs';
+import { cyan, red, yellow } from 'chalk';
+import { join, normalize } from 'path';
+import { platform } from 'os';
 
 export class AndroidDeviceManager implements DeviceManager {
+  constructor(private context: vscode.ExtensionContext) {}
   private treeDataProvider: DeviceTreeProvider = new DeviceTreeProvider(this);
+  private deviceState: Map<string, DeviceState> = new Map();
 
-  activate(context: vscode.ExtensionContext, providerName: string) {
-    vscode.commands.executeCommand(
-      'setContext',
-      'emulatormanager.androidHomeNotAvailable',
-      false
-    );
-
-    context.subscriptions.push(
+  activate(providerName: string) {
+    this.context.subscriptions.push(
       vscode.window.registerTreeDataProvider(
         providerName,
         this.treeDataProvider
       )
     );
-    // vscode.window.createTreeView(providerName, {
-    //   treeDataProvider: this.treeDataProvider,
-    // });
-    // context.subscriptions.push(
-    //   vscode.window.registerWebviewViewProvider(providerName, new wvProvider())
-    // );
+
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand('emulatormanager.android.Refresh', () => {
+        this.treeDataProvider.refresh();
+      })
+    );
+
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        'emulatormanager.android.Start',
+        (device: Device) => {
+          this.deviceState.set(device.id, DeviceState.starting);
+          this.treeDataProvider.refresh();
+          setTimeout(() => {
+            this.deviceState.set(device.id, DeviceState.running);
+            this.treeDataProvider.refresh();
+          }, 3000);
+        }
+      )
+    );
+
+    this.context.subscriptions.push(
+      vscode.commands.registerCommand(
+        'emulatormanager.android.Stop',
+        (device: Device) => {
+          this.deviceState.delete(device.id);
+          this.treeDataProvider.refresh();
+        }
+      )
+    );
   }
 
   async getDevices(): Promise<Device[]> {
-    return [
-      {
-        name: 'onplus',
-        id: '123',
-        isRunning: true,
-        manager: this,
-        platform: DevicePlatform.android,
-      },
-      {
-        name: 'samsung',
-        id: '123',
-        isRunning: true,
-        manager: this,
-        platform: DevicePlatform.android,
-      },
-    ];
-  }
-}
+    const androidHome =
+      process.env.ANDROID_HOME ||
+      vscode.workspace.getConfiguration('workbench');
 
-export class wvProvider implements vscode.WebviewViewProvider {
-  resolveWebviewView(
-    webviewView: vscode.WebviewView,
-    context: vscode.WebviewViewResolveContext<unknown>,
-    token: vscode.CancellationToken
-  ): void | Thenable<void> {
-    webviewView.webview.html = `<!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Cat Coding</title>
-    </head>
-    <body>
-        <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-    </body>
-    </html>`;
+    if (!androidHome) {
+      vscode.commands.executeCommand(
+        'setContext',
+        'emulatormanager.androidHomeNotAvailable',
+        true
+      );
+      return [];
+    }
+
+    const emulators = execFileSync(
+      normalize(join(androidHome as string, '/emulator/emulator')),
+      ['-list-avds'],
+      { encoding: 'utf8' }
+    )
+      .replace(/\n$/, '')
+      .split('\n');
+
+    return emulators
+      .filter((e) => !!e)
+      .map((e) => ({
+        name: e,
+        state: this.deviceState.get(e) || DeviceState.stopped,
+        manager: this,
+        platform: DevicePlatform.android,
+        id: e,
+      }));
   }
 }

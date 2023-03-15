@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
-import { ANDROID_TREE_PROVIDER } from './constants';
+import { ANDROID_VIEW_ID, IOS_VIEW_ID } from './constants';
 import { AndroidDeviceManager } from './managers/android';
+import { IosDeviceManager } from './managers/ios';
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -12,9 +13,11 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  const androidDeviceManager = new AndroidDeviceManager();
+  const androidDeviceManager = new AndroidDeviceManager(context);
+  const iosDeviceManager = new IosDeviceManager(context);
 
-  androidDeviceManager.activate(context, ANDROID_TREE_PROVIDER);
+  androidDeviceManager.activate(ANDROID_VIEW_ID);
+  iosDeviceManager.activate(IOS_VIEW_ID);
 }
 
 export function deactivate() {

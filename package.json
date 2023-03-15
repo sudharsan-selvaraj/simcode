@@ -10,17 +10,16 @@
     "Other"
   ],
   "activationEvents": [],
-  "icon": "media/icon.png",
   "main": "./out/extension.js",
   "contributes": {
     "views": {
-      "emulator-manager": [
+      "emulatormanager": [
         {
-          "id": "emulator-manager.android",
+          "id": "emulatormanager.android",
           "name": "Android"
         },
         {
-          "id": "emulator-manager.ios",
+          "id": "emulatormanager.ios",
           "name": "Ios",
           "when": "isMac == true"
         }
@@ -28,7 +27,7 @@
     },
     "viewsWelcome": [
       {
-        "view": "emulator-manager.android",
+        "view": "emulatormanager.android",
         "contents": "[Open Settings](command:emulatormanager.openSettings)",
         "when": "emulatormanager.androidHomeNotAvailable == true"
       }
@@ -36,7 +35,7 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "emulator-manager",
+          "id": "emulatormanager",
           "title": "Emulator Manager",
           "icon": "media/icon.svg"
         }
@@ -58,8 +57,54 @@
         "command": "emulatormanager.openSettings",
         "title": "Open emulator manager setting",
         "category": "Emulator Manager"
+      },
+      {
+        "command": "emulatormanager.android.Refresh",
+        "title": "Refresh",
+        "icon": "$(extensions-refresh)"
+      },
+      {
+        "command": "emulatormanager.ios.Refresh",
+        "title": "Refresh",
+        "icon": "$(extensions-refresh)"
+      },
+      {
+        "command": "emulatormanager.android.Start",
+        "title": "Start",
+        "icon": "$(debug-start)"
+      },
+      {
+        "command": "emulatormanager.android.Stop",
+        "title": "Stop",
+        "icon": "$(stop-circle)"
       }
-    ]
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "emulatormanager.android.Refresh",
+          "when": "view == emulatormanager.android",
+          "group": "navigation"
+        },
+        {
+          "command": "emulatormanager.ios.Refresh",
+          "when": "view == emulatormanager.ios",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "emulatormanager.android.Start",
+          "when": "view == emulatormanager.android && viewItem == stopped",
+          "group": "inline"
+        },
+        {
+          "command": "emulatormanager.android.Stop",
+          "group": "inline",
+          "when": "view == emulatormanager.android && viewItem == running"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -70,19 +115,22 @@
     "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.76.0",
     "@types/glob": "^8.1.0",
+    "@types/lodash": "^4.14.191",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/vscode": "^1.76.0",
     "@typescript-eslint/eslint-plugin": "^5.53.0",
     "@typescript-eslint/parser": "^5.53.0",
+    "@vscode/test-electron": "^2.2.3",
     "eslint": "^8.34.0",
     "glob": "^8.1.0",
     "mocha": "^10.2.0",
-    "typescript": "^4.9.5",
-    "@vscode/test-electron": "^2.2.3"
+    "typescript": "^4.9.5"
   },
   "dependencies": {
+    "execa": "^7.1.1",
+    "lodash": "^4.17.21",
     "node-simctl": "^7.1.12"
   }
 }
