@@ -10,12 +10,54 @@
     "Other"
   ],
   "activationEvents": [],
+  "icon": "media/icon.png",
   "main": "./out/extension.js",
   "contributes": {
+    "views": {
+      "emulator-manager": [
+        {
+          "id": "emulator-manager.android",
+          "name": "Android"
+        },
+        {
+          "id": "emulator-manager.ios",
+          "name": "Ios",
+          "when": "isMac == true"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "emulator-manager.android",
+        "contents": "[Open Settings](command:emulatormanager.openSettings)",
+        "when": "emulatormanager.androidHomeNotAvailable == true"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "emulator-manager",
+          "title": "Emulator Manager",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "configuration": {
+      "type": "object",
+      "title": "Emulator Manager",
+      "properties": {
+        "emulatormanager.androidhome": {
+          "type": "string",
+          "default": "",
+          "description": "ANDROID_HOME path"
+        }
+      }
+    },
     "commands": [
       {
-        "command": "emulator-manager.helloWorld",
-        "title": "Hello World"
+        "command": "emulatormanager.openSettings",
+        "title": "Open emulator manager setting",
+        "category": "Emulator Manager"
       }
     ]
   },
@@ -39,5 +81,8 @@
     "mocha": "^10.2.0",
     "typescript": "^4.9.5",
     "@vscode/test-electron": "^2.2.3"
+  },
+  "dependencies": {
+    "node-simctl": "^7.1.12"
   }
 }
