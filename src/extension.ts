@@ -3,7 +3,7 @@ import { ANDROID_VIEW_ID, IOS_VIEW_ID } from './constants';
 import { AndroidDeviceManager } from './managers/android';
 import { IosDeviceManager } from './managers/ios';
 
-export function activate(context: vscode.ExtensionContext) {
+export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand('emulatormanager.openSettings', () => {
       vscode.commands.executeCommand(
@@ -13,11 +13,16 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  const androidDeviceManager = new AndroidDeviceManager(context);
-  const iosDeviceManager = new IosDeviceManager(context);
+  const androidDeviceManager = new AndroidDeviceManager(
+    context,
+    ANDROID_VIEW_ID
+  );
+  const iosDeviceManager = new IosDeviceManager(context, IOS_VIEW_ID);
 
-  androidDeviceManager.activate(ANDROID_VIEW_ID);
-  iosDeviceManager.activate(IOS_VIEW_ID);
+  await Promise.allSettled([
+    androidDeviceManager.activate(),
+    iosDeviceManager.activate(),
+  ]);
 }
 
 export function deactivate() {

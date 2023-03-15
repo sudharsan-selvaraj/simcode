@@ -1,5 +1,13 @@
+import _ from 'lodash';
 import * as vscode from 'vscode';
-import { DEVICE, LOADER, STARTED } from '../constants';
+import {
+  ANDROID,
+  DEVICE,
+  DevicePlatform,
+  IOS,
+  LOADER,
+  STARTED,
+} from '../constants';
 import { DeviceManager } from '../managers/device-manager';
 import { Device, DeviceState } from '../models/device';
 
@@ -27,17 +35,35 @@ export class DeviceTreeProvider implements vscode.TreeDataProvider<Device> {
 
 export class DeviceTreeItem extends vscode.TreeItem {
   constructor(private device: Device) {
-    super(
-      `${device.name} (${device.state})`,
-      vscode.TreeItemCollapsibleState.None
-    );
+    super(device.name, vscode.TreeItemCollapsibleState.None);
 
     this.contextValue = device.state;
-    this.iconPath =
-      device.state === DeviceState.starting
-        ? LOADER
-        : device.state === DeviceState.running
-        ? STARTED
-        : DEVICE;
+    this.iconPath = this.getIcon();
+    this.description = this.getDescription();
+  }
+
+  getIcon() {
+    if (this.isBusy()) {
+      return LOADER;
+    } else if (this.device.state === DeviceState.running) {
+      return STARTED;
+    } else {
+      return this.device.platform === DevicePlatform.android ? ANDROID : IOS;
+    }
+  }
+
+  getDescription() {
+    if (this.isBusy()) {
+      return `${_.camelCase(this.device.state)}...`;
+    } else {
+      return this.device.version ? `(v${this.device.version})` : undefined;
+    }
+  }
+
+  isBusy() {
+    return (
+      this.device.state === DeviceState.starting ||
+      this.device.state === DeviceState.stopping
+    );
   }
 }

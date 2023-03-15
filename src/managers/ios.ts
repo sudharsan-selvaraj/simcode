@@ -1,37 +1,61 @@
 import * as vscode from 'vscode';
 import { DevicePlatform } from '../constants';
 import { Device, DeviceState } from '../models/device';
-import { DeviceTreeProvider } from '../views/device-tree-provider';
 import { DeviceManager } from './device-manager';
 import SimCtl from 'node-simctl';
 import _ from 'lodash';
 
-export class IosDeviceManager implements DeviceManager {
+export class IosDeviceManager extends DeviceManager {
   private simctl: any;
-  constructor(private context: vscode.ExtensionContext) {}
-  private treeDataProvider: DeviceTreeProvider = new DeviceTreeProvider(this);
+  private isSimctlAvailable: boolean = true;
 
-  activate(providerName: string) {
+  constructor(context: vscode.ExtensionContext, viewId: string) {
+    super(context, viewId, DevicePlatform.ios);
+  }
+
+  async activate() {
     try {
       this.simctl = new SimCtl();
-    } catch (err) {}
+      const devices = await this.getDevices();
+    } catch (err) {
+      this.isSimctlAvailable = false;
+      vscode.commands.executeCommand(
+        'setContext',
+        'emulatormanager.iosNotAvailable',
+        true
+      );
+    }
+    await super.activate();
+  }
 
-    this.context.subscriptions.push(
-      vscode.window.registerTreeDataProvider(
-        providerName,
-        this.treeDataProvider
-      )
-    );
+  async startDevice(device: Device): Promise<[boolean, Error | undefined]> {
+    try {
+      const simclt = new SimCtl({
+        udid: device.id,
+      });
 
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand('emulatormanager.ios.Refresh', () => {
-        this.treeDataProvider.refresh();
-      })
-    );
+      await simclt.bootDevice();
+      return [true, undefined];
+    } catch (err) {
+      return [false, err as Error];
+    }
+  }
+
+  async stopDevice(device: Device): Promise<[boolean, Error | undefined]> {
+    try {
+      const simclt = new SimCtl({
+        udid: device.id,
+      });
+
+      await simclt.shutdownDevice();
+      return [true, undefined];
+    } catch (err) {
+      return [false, err as Error];
+    }
   }
 
   async getDevices(): Promise<Device[]> {
-    if (this.simctl) {
+    if (this.isSimctlAvailable) {
       const devices = await this.simctl.getDevices();
       const _devices: Array<Device> = [];
       _.flatten(Object.values(devices)).forEach((d: any) => {
@@ -39,22 +63,24 @@ export class IosDeviceManager implements DeviceManager {
           name: d.name,
           id: d.udid,
           manager: this,
-          state: DeviceState.stopped,
+          state: this.computeDeviceState(d.udid, d.state || ''),
           platform: DevicePlatform.ios,
-
-          // type: DeviceType.SIMULATOR,
-          // busy: false,
-          // model: this.getSimulatorModel(d.name),
-          // mode:
-          //   d.name.toLowerCase().indexOf('ipad') >= 0
-          //     ? DeviceMode.TABLET
-          //     : DeviceMode.MOBILE,
-          // platform: d.platform.toLowerCase(),
+          version: d.sdk,
         });
       });
       return _devices;
     } else {
       return [];
+    }
+  }
+
+  computeDeviceState(id: string, simState: string) {
+    if (!_.isUndefined(this.getDeviceState(id))) {
+      return this.getDeviceState(id) as DeviceState;
+    } else {
+      return simState.toLowerCase() === 'shutdown'
+        ? DeviceState.stopped
+        : DeviceState.running;
     }
   }
 }

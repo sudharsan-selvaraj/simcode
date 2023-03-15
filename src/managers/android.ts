@@ -1,88 +1,85 @@
 import * as vscode from 'vscode';
 import { DevicePlatform } from '../constants';
 import { Device, DeviceState } from '../models/device';
-import { DeviceTreeProvider } from '../views/device-tree-provider';
 import { DeviceManager } from './device-manager';
-import { spawnSync, execFileSync } from 'child_process';
-import { existsSync } from 'fs';
-import { cyan, red, yellow } from 'chalk';
+import _ from 'lodash';
+import ADB from 'appium-adb';
+import { execFileSync } from 'child_process';
 import { join, normalize } from 'path';
-import { platform } from 'os';
 
-export class AndroidDeviceManager implements DeviceManager {
-  constructor(private context: vscode.ExtensionContext) {}
-  private treeDataProvider: DeviceTreeProvider = new DeviceTreeProvider(this);
-  private deviceState: Map<string, DeviceState> = new Map();
+export class AndroidDeviceManager extends DeviceManager {
+  private adb!: ADB;
+  private isADBAvailable = true;
+  private androidHome: string = '';
+  constructor(context: vscode.ExtensionContext, viewId: string) {
+    super(context, viewId, DevicePlatform.android);
+  }
 
-  activate(providerName: string) {
-    this.context.subscriptions.push(
-      vscode.window.registerTreeDataProvider(
-        providerName,
-        this.treeDataProvider
-      )
-    );
+  async activate() {
+    try {
+      this.adb = await ADB.createADB({});
+      this.androidHome = this.adb.executable.path.replace(
+        '/platform-tools/adb',
+        ''
+      );
+    } catch (err) {
+      this.isADBAvailable = false;
+      vscode.commands.executeCommand(
+        'setContext',
+        'emulatormanager.androidNotAvailable',
+        true
+      );
+    }
 
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand('emulatormanager.android.Refresh', () => {
-        this.treeDataProvider.refresh();
-      })
-    );
+    await super.activate();
+  }
 
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        'emulatormanager.android.Start',
-        (device: Device) => {
-          this.deviceState.set(device.id, DeviceState.starting);
-          this.treeDataProvider.refresh();
-          setTimeout(() => {
-            this.deviceState.set(device.id, DeviceState.running);
-            this.treeDataProvider.refresh();
-          }, 3000);
-        }
-      )
-    );
+  async startDevice(device: Device): Promise<[boolean, Error | undefined]> {
+    try {
+      await this.adb.launchAVD(device.name);
+      return [true, undefined];
+    } catch (err) {
+      return [false, err as Error];
+    }
+  }
 
-    this.context.subscriptions.push(
-      vscode.commands.registerCommand(
-        'emulatormanager.android.Stop',
-        (device: Device) => {
-          this.deviceState.delete(device.id);
-          this.treeDataProvider.refresh();
-        }
-      )
-    );
+  async stopDevice(device: Device): Promise<[boolean, Error | undefined]> {
+    try {
+      await this.adb.killEmulator(device.name);
+      return [true, undefined];
+    } catch (err) {
+      return [false, err as Error];
+    }
   }
 
   async getDevices(): Promise<Device[]> {
-    const androidHome =
-      process.env.ANDROID_HOME ||
-      vscode.workspace.getConfiguration('workbench');
-
-    if (!androidHome) {
-      vscode.commands.executeCommand(
-        'setContext',
-        'emulatormanager.androidHomeNotAvailable',
-        true
-      );
+    if (!this.isADBAvailable) {
       return [];
     }
 
     const emulators = execFileSync(
-      normalize(join(androidHome as string, '/emulator/emulator')),
+      normalize(join(this.androidHome as string, '/emulator/emulator')),
       ['-list-avds'],
       { encoding: 'utf8' }
     )
       .replace(/\n$/, '')
       .split('\n');
 
-    return emulators
-      .filter((e) => !!e)
-      .map((e) => ({
-        name: e,
-        state: this.deviceState.get(e) || DeviceState.stopped,
-        manager: this,
-        platform: DevicePlatform.android,
-        id: e,
-      }));
+    return await Promise.all(
+      emulators
+        .filter((e) => !!e)
+        .map(async (e) => {
+          const { target } = (await this.adb.getEmuImageProperties(e)) as any;
+          const apiMatch = /\d+/.exec(target);
+          return {
+            name: e,
+            state: this.getDeviceState(e) || DeviceState.stopped,
+            manager: this,
+            platform: DevicePlatform.android,
+            id: e,
+            version: apiMatch?.length ? apiMatch[0] : '',
+          };
+        })
+    );
   }
 }
