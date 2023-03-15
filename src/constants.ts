@@ -1,7 +1,7 @@
 import path from 'path';
 import vscode, { ThemeColor } from 'vscode';
-export const ANDROID_VIEW_ID = 'emulatormanager.android';
-export const IOS_VIEW_ID = 'emulatormanager.ios';
+export const ANDROID_VIEW_ID = 'simcode.android';
+export const IOS_VIEW_ID = 'simcode.ios';
 export enum DevicePlatform {
   'android' = 'android',
   'ios' = 'ios',

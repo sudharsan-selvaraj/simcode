@@ -21,7 +21,7 @@ export class IosDeviceManager extends DeviceManager {
       this.isSimctlAvailable = false;
       vscode.commands.executeCommand(
         'setContext',
-        'emulatormanager.iosNotAvailable',
+        'simcode.iosNotAvailable',
         true
       );
     }

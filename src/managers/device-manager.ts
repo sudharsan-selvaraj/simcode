@@ -22,7 +22,7 @@ export abstract class DeviceManager {
 
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        `emulatormanager.${this.platform}.refreshDevice`,
+        `simcode.${this.platform}.refreshDevice`,
         () => {
           this.refresh();
         }
@@ -31,14 +31,14 @@ export abstract class DeviceManager {
 
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        `emulatormanager.${this.platform}.startDevice`,
+        `simcode.${this.platform}.startDevice`,
         this.onStartDevice.bind(this)
       )
     );
 
     this.context.subscriptions.push(
       vscode.commands.registerCommand(
-        `emulatormanager.${this.platform}.stopDevice`,
+        `simcode.${this.platform}.stopDevice`,
         this.onStopDevice.bind(this)
       )
     );

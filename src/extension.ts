@@ -5,10 +5,10 @@ import { IosDeviceManager } from './managers/ios';
 
 export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
-    vscode.commands.registerCommand('emulatormanager.openSettings', () => {
+    vscode.commands.registerCommand('simcode.openSettings', () => {
       vscode.commands.executeCommand(
         'workbench.action.openSettings',
-        'emulatormanager.androidhome'
+        'simcode.androidhome'
       );
     })
   );

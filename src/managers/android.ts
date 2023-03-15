@@ -26,7 +26,7 @@ export class AndroidDeviceManager extends DeviceManager {
       this.isADBAvailable = false;
       vscode.commands.executeCommand(
         'setContext',
-        'emulatormanager.androidNotAvailable',
+        'simcode.androidNotAvailable',
         true
       );
     }

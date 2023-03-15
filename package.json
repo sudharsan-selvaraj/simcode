@@ -1,6 +1,6 @@
 {
-  "name": "emulator-manager",
-  "displayName": "emulator-manager",
+  "name": "simcode",
+  "displayName": "SimCode",
   "description": "VS code extension to Manage android emulator and ios simulators",
   "version": "1.0.0",
   "engines": {
@@ -13,13 +13,13 @@
   "main": "./out/extension.js",
   "contributes": {
     "views": {
-      "emulatormanager": [
+      "simcode": [
         {
-          "id": "emulatormanager.android",
+          "id": "simcode.android",
           "name": "Android"
         },
         {
-          "id": "emulatormanager.ios",
+          "id": "simcode.ios",
           "name": "Ios",
           "when": "isMac == true"
         }
@@ -27,20 +27,20 @@
     },
     "viewsWelcome": [
       {
-        "view": "emulatormanager.android",
+        "view": "simcode.android",
         "contents": "Unable to fetch andoid emulators. Make sure you ANDROID_HOME environemt variable points to correct directory.\nLean more about environment varibales in [android documentation](https://developer.android.com/studio/command-line/variables)",
-        "when": "emulatormanager.androidNotAvailable == true"
+        "when": "simcode.androidNotAvailable == true"
       },
       {
-        "view": "emulatormanager.ios",
+        "view": "simcode.ios",
         "contents": "Unable to fetch iOS emulators. Make sure you have latest xcode and xcode command line utility are installed",
-        "when": "emulatormanager.iosNotAvailable == true"
+        "when": "simcode.iosNotAvailable == true"
       }
     ],
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "emulatormanager",
+          "id": "simcode",
           "title": "Emulator Manager",
           "icon": "media/icon.svg"
         }
@@ -50,7 +50,7 @@
       "type": "object",
       "title": "Emulator Manager",
       "properties": {
-        "emulatormanager.androidhome": {
+        "simcode.androidhome": {
           "type": "string",
           "default": "",
           "description": "ANDROID_HOME path"
@@ -59,37 +59,37 @@
     },
     "commands": [
       {
-        "command": "emulatormanager.openSettings",
+        "command": "simcode.openSettings",
         "title": "Open emulator manager setting",
         "category": "Emulator Manager"
       },
       {
-        "command": "emulatormanager.android.refreshDevice",
+        "command": "simcode.android.refreshDevice",
         "title": "Refresh",
         "icon": "$(extensions-refresh)"
       },
       {
-        "command": "emulatormanager.android.startDevice",
+        "command": "simcode.android.startDevice",
         "title": "Start",
         "icon": "$(debug-start)"
       },
       {
-        "command": "emulatormanager.android.stopDevice",
+        "command": "simcode.android.stopDevice",
         "title": "Stop",
         "icon": "$(stop-circle)"
       },
       {
-        "command": "emulatormanager.ios.refreshDevice",
+        "command": "simcode.ios.refreshDevice",
         "title": "Refresh",
         "icon": "$(extensions-refresh)"
       },
       {
-        "command": "emulatormanager.ios.startDevice",
+        "command": "simcode.ios.startDevice",
         "title": "Start",
         "icon": "$(debug-start)"
       },
       {
-        "command": "emulatormanager.ios.stopDevice",
+        "command": "simcode.ios.stopDevice",
         "title": "Stop",
         "icon": "$(stop-circle)"
       }
@@ -97,36 +97,36 @@
     "menus": {
       "view/title": [
         {
-          "command": "emulatormanager.android.refreshDevice",
-          "when": "view == emulatormanager.android",
+          "command": "simcode.android.refreshDevice",
+          "when": "view == simcode.android",
           "group": "navigation"
         },
         {
-          "command": "emulatormanager.ios.refreshDevice",
-          "when": "view == emulatormanager.ios",
+          "command": "simcode.ios.refreshDevice",
+          "when": "view == simcode.ios",
           "group": "navigation"
         }
       ],
       "view/item/context": [
         {
-          "command": "emulatormanager.android.startDevice",
-          "when": "view == emulatormanager.android && viewItem == stopped",
+          "command": "simcode.android.startDevice",
+          "when": "view == simcode.android && viewItem == stopped",
           "group": "inline"
         },
         {
-          "command": "emulatormanager.android.stopDevice",
+          "command": "simcode.android.stopDevice",
           "group": "inline",
-          "when": "view == emulatormanager.android && viewItem == running"
+          "when": "view == simcode.android && viewItem == running"
         },
         {
-          "command": "emulatormanager.ios.startDevice",
-          "when": "view == emulatormanager.ios && viewItem == stopped",
+          "command": "simcode.ios.startDevice",
+          "when": "view == simcode.ios && viewItem == stopped",
           "group": "inline"
         },
         {
-          "command": "emulatormanager.ios.stopDevice",
+          "command": "simcode.ios.stopDevice",
           "group": "inline",
-          "when": "view == emulatormanager.ios && viewItem == running"
+          "when": "view == simcode.ios && viewItem == running"
         }
       ]
     }
