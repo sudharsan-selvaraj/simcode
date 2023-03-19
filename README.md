@@ -1,6 +1,6 @@
 <h1 align="center">Simcode</h1>
 <div align="center">
-  <strong> Manage android emulator and ios emulators from vscode</strong>  
+  <strong> Manage android emulator and iOS simulators drirectly from the comfort of your editor</strong>  
 </div>
 <br />
 
@@ -17,7 +17,6 @@ SimCode is a [Visual Studio Code](https://code.visualstudio.com/) [extension](ht
 - Lightweight UI to list android and ios devices
 - Start and stop emulators/simulators with single click.
 
-
 ## Pre-requisites
 
 - Android SDK is required and `ANDROID_HOME` environment variable should pointing to Android Sdk's root directory.
@@ -33,6 +32,6 @@ SimCode is a [Visual Studio Code](https://code.visualstudio.com/) [extension](ht
 ## Known Issues
 
 - If you come across a problem with the extension, please file an [issue](https://github.com/sudharsan-selvaraj/simcode/issues/new)
-- For list of known issues, please check the [existing issues][https://github.com/sudharsan-selvaraj/simcode/issues)
+- For list of known issues, please check the [existing issues]https://github.com/sudharsan-selvaraj/simcode/issues)
 
 **Enjoy!**
